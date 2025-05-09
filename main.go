@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -8,8 +9,19 @@ import (
 	"github.com/leminhohoho/doffy/runner"
 )
 
+var (
+	currentDir string
+	homeDir    string
+)
+
 func init() {
-	currentDir, err := filepath.Abs(".")
+	args := os.Args[1:]
+
+	if len(args) == 0 {
+		log.Fatal("No path specified")
+	}
+
+	currentDir, err := filepath.Abs(args[0])
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -24,11 +36,10 @@ func init() {
 }
 
 func main() {
-	args := os.Args[1:]
+	doffy := runner.NewDoffy()
 
-	for _, arg := range args {
-		if err := runner.PathResolver(arg); err != nil {
-			log.Fatal(err)
-		}
+	if err := doffy.Run(); err != nil {
+		log.Fatal(err)
 	}
+	fmt.Println("Linked!")
 }
