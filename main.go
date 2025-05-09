@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"flag"
 	"log"
 	"os"
 	"path/filepath"
@@ -12,10 +12,16 @@ import (
 var (
 	currentDir string
 	homeDir    string
+
+	isDelete bool
 )
 
 func init() {
-	args := os.Args[1:]
+	flag.BoolVar(&isDelete, "D", false, "Specify to delete the symlinks")
+
+	flag.Parse()
+
+	args := flag.Args()
 
 	if len(args) == 0 {
 		log.Fatal("No path specified")
@@ -36,10 +42,9 @@ func init() {
 }
 
 func main() {
-	doffy := runner.NewDoffy()
+	doffy := runner.NewDoffy(isDelete)
 
 	if err := doffy.Run(); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Linked!")
 }

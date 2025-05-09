@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-func PathResolver(pathToBeResolved string) (string, error) {
-	absPath, err := filepath.Abs(pathToBeResolved)
+func CreateSymlinkPath(originPath string) (string, error) {
+	absPath, err := filepath.Abs(originPath)
 	if err != nil {
 		return "", err
 	}
@@ -21,7 +21,14 @@ func PathResolver(pathToBeResolved string) (string, error) {
 		)
 	}
 
-	symlinkPath := path.Join(os.Getenv("HOME_DIR"), pathRelativeToCurrentDir)
+	return path.Join(os.Getenv("HOME_DIR"), pathRelativeToCurrentDir), nil
+}
+
+func PathResolver(pathToBeResolved string) (string, error) {
+	symlinkPath, err := CreateSymlinkPath(pathToBeResolved)
+	if err != nil {
+		return "", err
+	}
 
 	fileInfo, err := os.Lstat(symlinkPath)
 
