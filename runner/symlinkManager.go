@@ -56,12 +56,14 @@ func (d *Doffy) init() error {
 			if errors.Is(err, ErrSymlinkExist{}) || errors.Is(err, ErrFileExist{}) ||
 				errors.Is(err, ErrDirExist{}) {
 				fmt.Println(err.Error())
-				continue
+				goto CONTINUE
 			}
 			return err
 		}
 
 		d.symlinks = append(d.symlinks, &Symlink{path, symlinkPath})
+	CONTINUE:
+		continue
 	}
 
 	return nil

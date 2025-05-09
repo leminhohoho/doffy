@@ -2,7 +2,6 @@ package runner
 
 import (
 	"fmt"
-	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
@@ -32,7 +31,7 @@ func PathResolver(pathToBeResolved string) (string, error) {
 			return "", ErrDirExist{symlinkPath}
 		} else if fileInfo.Mode().IsRegular() {
 			return "", ErrFileExist{symlinkPath}
-		} else if fileInfo.Mode() == fs.ModeSymlink {
+		} else if fileInfo.Mode()&os.ModeSymlink != 0 {
 			return "", ErrSymlinkExist{symlinkPath}
 		}
 	}
