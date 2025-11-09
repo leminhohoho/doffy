@@ -2,49 +2,38 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
-
-	"github.com/leminhohoho/doffy/runner"
 )
 
-var (
-	currentDir string
-	homeDir    string
-
-	isDelete bool
-)
-
-func init() {
-	flag.BoolVar(&isDelete, "D", false, "Specify to delete the symlinks")
-
+func main() {
 	flag.Parse()
-
 	args := flag.Args()
 
 	if len(args) == 0 {
-		log.Fatal("No path specified")
+		log.Fatal("Dotfiles path must not be empty\n")
 	}
 
-	currentDir, err := filepath.Abs(args[0])
-	if err != nil {
-		log.Fatal(err)
-	}
+	dotfilesPath, err := filepath.Abs(args[0])
 
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	os.Setenv("CURRENT_DIR", currentDir)
-	os.Setenv("HOME_DIR", homeDir)
-}
+	var targetDir string
 
-func main() {
-	doffy := runner.NewDoffy(isDelete)
-
-	if err := doffy.Run(); err != nil {
-		log.Fatal(err)
+	if len(args) < 2 {
+		targetDir, err = filepath.Abs(homeDir)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		targetDir, err = filepath.Abs(args[1])
 	}
+
+	fmt.Printf("Dotfile dir: %s\n", dotfilesPath)
+	fmt.Printf("Target dir: %s\n", targetDir)
 }
