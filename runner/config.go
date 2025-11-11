@@ -3,6 +3,7 @@ package runner
 import (
 	"errors"
 	"os"
+	"path"
 
 	"dario.cat/mergo"
 	"github.com/pelletier/go-toml/v2"
@@ -20,10 +21,12 @@ var defaultCfg = Config{
 	},
 }
 
-var configPath = ".doffy.toml"
+var configFileName = ".doffy.toml"
 
-func NewConfig() (*Config, error) {
+func NewConfig(dotfilesPath string) (*Config, error) {
 	cfg := defaultCfg
+
+	configPath := path.Join(dotfilesPath, configFileName)
 
 	data, err := os.ReadFile(configPath)
 	if err != nil {

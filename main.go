@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -36,10 +35,17 @@ func main() {
 		targetDir, err = filepath.Abs(args[1])
 	}
 
-	fmt.Printf("Dotfile dir: %s\n", dotfilesPath)
-	fmt.Printf("Target dir: %s\n", targetDir)
-
-	if err := runner.Link(dotfilesPath, targetDir); err != nil {
+	cfg, err := runner.NewConfig(dotfilesPath)
+	if err != nil {
 		log.Fatal(err)
 	}
+
+	results := runner.Results{}
+
+	if err := runner.Link(dotfilesPath, targetDir, cfg, &results); err != nil {
+		log.Fatal(err)
+	}
+
+	results.Log()
+	results.Summary()
 }

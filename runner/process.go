@@ -48,12 +48,7 @@ func alternatePathExist(oldPath, newPath string) (bool, bool, bool, error) {
 	return isSymlink && isSymlinkToOldPath, isSameType, fNew.IsDir(), nil
 }
 
-func Link(dotfileDir, targetDir string) error {
-	cfg, err := NewConfig()
-	if err != nil {
-		return err
-	}
-
+func Link(dotfileDir, targetDir string, cfg *Config, results *Results) error {
 	ig := ignore.CompileIgnoreLines(cfg.Files.Exclude...)
 
 	entries, err := os.ReadDir(dotfileDir)
@@ -84,7 +79,7 @@ func Link(dotfileDir, targetDir string) error {
 				continue
 			}
 
-			if err := Link(pathOnDotfiles, pathOnTarget); err != nil {
+			if err := Link(pathOnDotfiles, pathOnTarget, cfg, results); err != nil {
 				return err
 			}
 		} else {
@@ -98,6 +93,8 @@ func Link(dotfileDir, targetDir string) error {
 			}
 
 			fmt.Printf("Symlink created: %s -> %s\n", pathOnTarget, pathOnDotfiles)
+
+			*results = append(*results, Result{pathOnDotfiles, pathOnTarget})
 		}
 	}
 
