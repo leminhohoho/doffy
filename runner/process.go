@@ -3,6 +3,7 @@ package runner
 import (
 	"errors"
 	"fmt"
+	ignore "github.com/sabhiram/go-gitignore"
 	"os"
 	"path"
 )
@@ -34,9 +35,20 @@ func alternatePathExist(pathA, pathB string) (bool, bool, error) {
 }
 
 func Link(dotfileDir, targetDir string) error {
+	cfg, err := NewConfig()
+	if err != nil {
+		return err
+	}
+
+	ig := ignore.CompileIgnoreLines(cfg.Files.Exclude...)
+
 	entries, err := os.ReadDir(dotfileDir)
 	if err != nil {
 		return err
+	}
+
+	if len(entries) == 0 {
+		fmt.Printf("Directory at %s contain no entry, skipping\n", dotfileDir)
 	}
 
 	for _, entry := range entries {
@@ -58,9 +70,17 @@ func Link(dotfileDir, targetDir string) error {
 				return err
 			}
 		} else {
+			if ig.MatchesPath(pathOnDotfiles) {
+				fmt.Printf("Path %s match exclude list, skipping\n", pathOnDotfiles)
+				continue
+			}
+
+			if err := os.Symlink(pathOnDotfiles, pathOnTarget); err != nil {
+				return err
+			}
+
 			fmt.Printf("Symlink created: %s -> %s\n", pathOnTarget, pathOnDotfiles)
 		}
-
 	}
 
 	return nil
