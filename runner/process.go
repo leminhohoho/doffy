@@ -12,26 +12,40 @@ import (
 // It return 2 boolean values.
 // 1st one indicate whether the 2 paths exists and are the same.
 // the 2nd one indicates whether they are directories or files.
-func alternatePathExist(pathA, pathB string) (bool, bool, error) {
-	fA, err := os.Stat(pathA)
+func alternatePathExist(oldPath, newPath string) (bool, bool, bool, error) {
+	fOld, err := os.Lstat(oldPath)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
-			return false, false, err
+			return false, false, false, err
 		}
 
-		return false, false, nil
+		return false, false, false, nil
 	}
 
-	fB, err := os.Stat(pathB)
+	fNew, err := os.Lstat(newPath)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
-			return false, false, err
+			return false, false, false, err
 		}
 
-		return false, false, nil
+		return false, false, false, nil
 	}
 
-	return fA.IsDir() == fB.IsDir(), fA.IsDir(), nil
+	isSameType := fOld.IsDir() == fNew.IsDir()
+	isSymlink := fNew.Mode()&os.ModeSymlink != 0
+
+	var isSymlinkToOldPath bool
+
+	if isSymlink {
+		symlinkPath, err := os.Readlink(newPath)
+		if err != nil {
+			return false, false, false, err
+		}
+
+		isSymlinkToOldPath = symlinkPath == oldPath
+	}
+
+	return isSymlink && isSymlinkToOldPath, isSameType, fNew.IsDir(), nil
 }
 
 func Link(dotfileDir, targetDir string) error {
@@ -55,9 +69,13 @@ func Link(dotfileDir, targetDir string) error {
 		pathOnTarget := path.Join(targetDir, entry.Name())
 		pathOnDotfiles := path.Join(dotfileDir, entry.Name())
 
-		exists, isDir, err := alternatePathExist(pathOnDotfiles, pathOnTarget)
+		linked, exists, isDir, err := alternatePathExist(pathOnDotfiles, pathOnTarget)
 		if err != nil {
 			return err
+		}
+
+		if linked {
+			continue
 		}
 
 		if exists {
