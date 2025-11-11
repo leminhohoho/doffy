@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/leminhohoho/doffy/runner"
 )
 
 func main() {
@@ -36,4 +38,8 @@ func main() {
 
 	fmt.Printf("Dotfile dir: %s\n", dotfilesPath)
 	fmt.Printf("Target dir: %s\n", targetDir)
+
+	if err := runner.Link(dotfilesPath, targetDir); err != nil {
+		log.Fatal(err)
+	}
 }
