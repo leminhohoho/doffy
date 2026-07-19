@@ -92,8 +92,6 @@ func Link(dotfileDir, targetDir string, cfg *Config, results *Results) error {
 				return err
 			}
 
-			fmt.Printf("Symlink created: %s -> %s\n", pathOnTarget, pathOnDotfiles)
-
 			*results = append(*results, Result{pathOnDotfiles, pathOnTarget})
 		}
 	}
